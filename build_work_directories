@@ -1,0 +1,169 @@
+#!/bin/bash
+
+# TODO: back to data
+data_dir="data-debug"
+
+files_per_block="20"
+
+#----------------------------------------------------------------------------------------------------
+
+function MakeJSON()
+{
+	reference="json/$1.json"
+
+	dir="$data_dir/$period"
+	mkdir -p "$dir"
+
+	(
+		echo "{"
+		for run in `seq $run_min $run_max`
+		do
+			e=","
+			if [ $run == $run_max ]; then e=""; fi
+
+			echo "    \"$run\": [[1, 999999999]]$e"
+		done
+		echo "}"
+	) > "$dir/range.json" 
+
+	compareJSON.py --and "$reference" "$dir/range.json" > "$dir/selection.json"
+}
+
+#----------------------------------------------------------------------------------------------------
+
+function FlushBuffer()
+{
+	local buffer="$1"
+	local block_idx="$2"
+
+	local block_g
+	let block_g=block_idx/100
+
+	local dir="$base_dir/${block_g}/block${block_idx}"
+	mkdir -p "$dir"
+
+	echo "* $dir"
+	
+	(
+		echo "import FWCore.ParameterSet.Config as cms"
+		echo ""
+		echo "input_files = cms.untracked.vstring("
+		echo -e "$buffer"
+		echo ")"
+	) > "$dir/input_files.py"
+
+	cat "template_cfg.py" | sed "\
+			s|\$run_min|$run_min|;\
+			s|\$run_max|$run_max|;\
+		" > "$dir/cfg.py"
+}
+
+#----------------------------------------------------------------------------------------------------
+
+function MakeFiles()
+{
+	base_dir="$data_dir/$period/$1"
+	query="file dataset=$2"
+
+	buffer=""
+	buffer_size="0"
+
+	block_idx="0"
+
+	for file in `dasgoclient --query "$query"|grep store`
+	do
+		if [ -n "$buffer" ]
+		then
+			buffer="$buffer,\n"
+		fi
+		#buffer="$buffer\t\"root://cmsxrootd.fnal.gov//$file\""
+		buffer="$buffer\t\"$file\""
+
+		let buffer_size+=1
+
+		if [ "$buffer_size" -ge "$files_per_block" ]
+		then
+			FlushBuffer "$buffer" "$block_idx"
+	
+			buffer=""
+			let buffer_size=0
+			let block_idx+=1
+		fi
+	done
+
+	if [ "$buffer_size" -gt "0" ]
+	then
+		FlushBuffer "$buffer" "$block_idx"
+	
+		buffer=""
+		let buffer_size=0
+		let block_idx+=1
+	fi
+}
+
+#----------------------------------------------------------------------------------------------------
+
+# ----- 2016 -----
+
+period="2016_preTS2_1"
+fill_min="4947"; run_min="273725"
+fill_max="5052"; run_max="275931"
+MakeJSON "2016"
+MakeFiles "Run2016B" "/SingleMuon/Run2016B-21Feb2020_ver2_UL2016_HIPM-v1/MINIAOD"
+MakeFiles "Run2016C" "/SingleMuon/Run2016C-21Feb2020_UL2016_HIPM-v1/MINIAOD"
+
+period="2016_preTS2_2"
+fill_min="5261"; run_min="279760"
+fill_max="5288"; run_max="280385"
+MakeJSON "2016"
+MakeFiles "Run2016G" "/SingleMuon/Run2016G-21Feb2020_UL2016-v1/MINIAOD"
+
+period="2016_postTS2"
+fill_min="5393"; run_min="282730"
+fill_max="5451"; run_max="284044"
+MakeJSON "2016"
+MakeFiles "Run2016H" "/SingleMuon/Run2016H-21Feb2020_UL2016-v1/MINIAOD"
+
+
+
+# ----- 2017 -----
+
+period="2017_preTS2"
+fill_min="5839"; run_min="297046"
+fill_max="6193"; run_max="302663"
+MakeJSON "2017"
+MakeFiles "Run2017B" "/SingleMuon/Run2017B-09Aug2019_UL2017-v1/MINIAOD"
+MakeFiles "Run2017C" "/SingleMuon/Run2017C-09Aug2019_UL2017-v1/MINIAOD"
+MakeFiles "Run2017D" "/SingleMuon/Run2017D-09Aug2019_UL2017-v1/MINIAOD"
+
+period="2017_postTS2"
+fill_min="6239"; run_min="303824"
+fill_max="6371"; run_max="306462"
+MakeJSON "2017"
+MakeFiles "Run2017E" "/SingleMuon/Run2017E-09Aug2019_UL2017-v1/MINIAOD"
+MakeFiles "Run2017F" "/SingleMuon/Run2017F-09Aug2019_UL2017-v1/MINIAOD"
+
+
+
+# ----- 2018 -----
+
+period="2018_preTS1"
+fill_min="6615"; run_min="315242"
+fill_max="6778"; run_max="317696"
+MakeJSON "2018"
+MakeFiles "Run2018A" "/SingleMuon/Run2018A-12Nov2019_UL2018_rsb-v1/MINIAOD"
+MakeFiles "Run2018B" "/SingleMuon/Run2018B-12Nov2019_UL2018-v2/MINIAOD"
+
+period="2018_TS1_TS2"
+fill_min="6854"; run_min="318816"
+fill_max="7145"; run_max="322633"
+MakeJSON "2018"
+MakeFiles "Run2018B" "/SingleMuon/Run2018B-12Nov2019_UL2018-v2/MINIAOD"
+MakeFiles "Run2018C" "/SingleMuon/Run2018C-12Nov2019_UL2018-v2/MINIAOD"
+MakeFiles "Run2018D" "/SingleMuon/Run2018D-12Nov2019_UL2018-v4/MINIAOD"
+
+period="2018_postTS2"
+fill_min="7213"; run_min="323413"
+fill_max="7334"; run_max="325175"
+MakeJSON "2018"
+MakeFiles "Run2018D" "/SingleMuon/Run2018D-12Nov2019_UL2018-v4/MINIAOD"

@@ -1,0 +1,9 @@
+*.pdf
+*.log
+*.sub
+
+data*
+test*
+
+extract
+merge
