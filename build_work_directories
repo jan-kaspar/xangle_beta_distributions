@@ -1,7 +1,6 @@
 #!/bin/bash
 
-# TODO: back to data
-data_dir="data-debug"
+data_dir="data"
 
 files_per_block="20"
 
@@ -53,6 +52,7 @@ function FlushBuffer()
 	) > "$dir/input_files.py"
 
 	cat "template_cfg.py" | sed "\
+			s|\$year|$year|;\
 			s|\$run_min|$run_min|;\
 			s|\$run_max|$run_max|;\
 		" > "$dir/cfg.py"
@@ -105,6 +105,8 @@ function MakeFiles()
 
 # ----- 2016 -----
 
+year="2016"
+
 period="2016_preTS2_1"
 fill_min="4947"; run_min="273725"
 fill_max="5052"; run_max="275931"
@@ -128,6 +130,8 @@ MakeFiles "Run2016H" "/SingleMuon/Run2016H-21Feb2020_UL2016-v1/MINIAOD"
 
 # ----- 2017 -----
 
+year="2017"
+
 period="2017_preTS2"
 fill_min="5839"; run_min="297046"
 fill_max="6193"; run_max="302663"
@@ -146,6 +150,8 @@ MakeFiles "Run2017F" "/SingleMuon/Run2017F-09Aug2019_UL2017-v1/MINIAOD"
 
 
 # ----- 2018 -----
+
+year="2018"
 
 period="2018_preTS1"
 fill_min="6615"; run_min="315242"
