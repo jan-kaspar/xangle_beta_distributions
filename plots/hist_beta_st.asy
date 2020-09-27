@@ -9,6 +9,7 @@ string y_periods[][];
 years.push("2016"); y_periods.push(new string[] {"2016_preTS2", "2016_postTS2"});
 years.push("2017"); y_periods.push(new string[] {"2017_preTS2", "2017_postTS2"});
 years.push("2018"); y_periods.push(new string[] {"2018_preTS1", "2018_TS1_TS2", "2018_postTS2"});
+years.push("2021"); y_periods.push(new string[] {"2021"});
 
 xTicksDef = LeftTicks(1., 0.5);
 

@@ -11,6 +11,7 @@ string y_periods[][];
 years.push("2016"); y_periods.push(new string[] {"2016_preTS2", "2016_postTS2"});
 years.push("2017"); y_periods.push(new string[] {"2017_preTS2", "2017_postTS2"});
 years.push("2018"); y_periods.push(new string[] {"2018_preTS1", "2018_TS1_TS2", "2018_postTS2"});
+years.push("2021"); y_periods.push(new string[] {"2021"});
 
 xTicksDef = LeftTicks(10., 5.);
 
@@ -30,7 +31,9 @@ for (int yi : years.keys)
 
 		NewPad("xangle$\ung{\mu rad}$", "probability");
 
-		draw(RootGetObject(f_prev, "h_xangle_" + period), "n,vl", blue);
+		RootObject h_prev = RootGetObject(f_prev, "h_xangle_" + period, false);
+		if (h_prev.valid)
+			draw(h_prev, "n,vl", blue);
 
 		RootObject h2 = RootGetObject(f, period + "/h2_betaStar_vs_xangle");
 		RootObject h_xangle = h2.oExec("ProjectionX");
